@@ -3,6 +3,8 @@ name = "tobacco"
 version = "0.0.0"
 edition = "2024"
 authors = ["Andy Hsu", "3261429104atqq.com"]
+readme.workspace = true
+license.workspace = true
 description = "Quiclike protocol"
 
 [dependencies]
