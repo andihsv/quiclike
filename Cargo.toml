@@ -1,5 +1,6 @@
 [workspace]
 members = ["cigeratte", "miror", "smog", "smog-ext", "tobacco"]
+resolver = "3"
 
 [workspace.package]
 version = "0.0.0"
