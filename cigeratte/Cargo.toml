@@ -1,0 +1,8 @@
+[package]
+name = "cigeratte"
+version = "0.0.0"
+edition = "2024"
+authors = ["Andy Hsu", "3261429104atqq.com"]
+description = "Higher level abstraction for tobacco part of quiclike protocol."
+
+[dependencies]

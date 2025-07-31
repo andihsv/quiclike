@@ -1,0 +1,14 @@
+[workspace]
+members = ["cigeratte", "miror", "smog", "smog-ext", "tobacco"]
+
+[workspace.package]
+version = "0.0.0"
+edition = "2024"
+authors = ["Andy Hsu", "3261429104atqq.com"]
+license = "Apache-2.0"
+
+[workspace.dependencies]
+bytes = "1.10.1"
+thiserror = "2.0.12"
+tokio = { version = "1.47.0", features = ["net"] }
+tracing = "0.1.41"

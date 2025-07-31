@@ -1,0 +1,8 @@
+[package]
+name = "miror"
+version = "0.1.0"
+edition = "2024"
+authors = ["Andy Hsu", "3261429104atqq.com"]
+description = "P2P support for quiclike protocol."
+
+[dependencies]
