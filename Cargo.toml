@@ -6,6 +6,7 @@ version = "0.0.0"
 edition = "2024"
 authors = ["Andy Hsu", "3261429104atqq.com"]
 license = "Apache-2.0"
+repository = "https://github.com/andihsu/quiclike"
 
 [workspace.dependencies]
 bytes = "1.10.1"
