@@ -3,6 +3,8 @@ name = "smog"
 version = "0.0.0"
 edition = "2024"
 authors = ["Andy Hsu", "3261429104atqq.com"]
+license.workspace = true
+readme.workspace = true
 description = "The noise protocol framework implementation for quiclike protocol, part of tobacco."
 
 [dependencies]

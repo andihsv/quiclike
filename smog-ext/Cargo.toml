@@ -3,6 +3,8 @@ name = "smog-ext"
 version = "0.0.0"
 edition = "2024"
 authors = ["Andy Hsu", "3261429104atqq.com"]
+license.workspace = true
+readme.workspace = true
 description = "Ext for smog framework, part of tobacco."
 
 [dependencies]
