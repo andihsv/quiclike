@@ -5,6 +5,11 @@ edition = "2024"
 authors = ["Andy Hsu", "3261429104atqq.com"]
 license.workspace = true
 readme.workspace = true
+categories = ["noise", "crypto", "quiclike", "tobacco"]
 description = "The noise protocol framework implementation for quiclike protocol, part of tobacco."
 
 [dependencies]
+anyhow = "1.0.98"
+
+[dev-dependencies]
+tokio = { version = "1.47.0", features = ["rt-multi-thread", "macros"] }
