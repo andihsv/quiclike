@@ -1,3 +1,5 @@
+use super::fallback::PipeState;
+
 /// Handshake Pattern Derivation.
 /// Action symbols: Client Side / Server Side of view about "What the fuck am i gonna do?"
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -24,85 +26,78 @@ pub struct ModeDescriptor {
     /// e.g. IK
     pub pattern: [char; 2],
     /// Whether contain 'psk' modifier or not.
-    pub psk: bool,
+    pub psk_delay: Option<u8>,
 }
 
 impl ModeDescriptor {
+
+    fn inject_psk(steps: &mut Vec<HandshakeStep>, delay: Option<u8>) {
+        if delay == Some(0) {
+            // psk0: Send in the first message.
+            if let Some(pos) = steps.iter().position(|&s| s == HandshakeStep::SendEphemeral) {
+                steps.insert(pos + 1, HandshakeStep::SendPskTag);
+            }
+            return;
+        }
+
+        // psk1 / psk2: Insert the message after No.'delay'.
+        let mut msg_index = 0;
+        for i in 0..steps.len() {
+            match steps[i] {
+                HandshakeStep::SendEphemeral | HandshakeStep::SendStatic => {
+                    msg_index += 1;
+                    if Some(msg_index) == delay {
+                        steps.insert(i + 1, HandshakeStep::SendPskTag);
+                        return;
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+
     /// Steps that the initiator needs to take.
     pub fn initiator_steps(&self) -> Vec<HandshakeStep> {
-        let mut out = Vec::new();
+        let mut steps = self.base_initiator_steps();
+        Self::inject_psk(&mut steps, self.psk_delay);
+        steps
+    }
+
+    fn base_initiator_steps(&self) -> Vec<HandshakeStep> {
         let [a, b] = self.pattern;
+        let mut out = vec![];
 
-        // --- Step 1: If a == 'I', then send clear data 's'.
-        if a == 'I' {
-            out.push(HandshakeStep::SendStatic);
-        }
-
-        // --- Step 2: The initiator sends 'e' first.
+        if a == 'I' { out.push(HandshakeStep::SendStatic); }
         out.push(HandshakeStep::SendEphemeral);
+        if a == 'N' || a == 'X' { out.push(HandshakeStep::SendStatic); }
 
-        // --- Step 3: The intiator decides what to do next based on the pattern.
-        match a {
-            'N' | 'X' => {
-                // Encrypt 's' before sending.
-                out.push(HandshakeStep::SendStatic);
-            }
-            _ => {}
-        }
-
-        // --- Step 4: The initiator waits for the first reply.
         out.push(HandshakeStep::RecvEphemeral);
 
-        // --- Step 5: This step depends on the pattern. The initiator sends 's' again.
-        match a {
-            'X' | 'I' => {
-                // Already sent, does nothing here.
-            }
+        match (a, b) {
+            ('I', _) | ('X', _) => {} // Sent
             _ => {
-                // e.g. NK, IK, the initiator have not sent 's' yet.
                 if b == 'K' || b == 'X' {
                     out.push(HandshakeStep::SendStatic);
                 }
             }
         }
-
-        // --- Step 6: If contain 'psk' modifier, the initiator send 'psk' in the first message.
-        if self.psk {
-            out.insert(2, HandshakeStep::SendPskTag);
-        }
-
         out.push(HandshakeStep::Done);
         out
     }
 
     /// Steps that the responder needs to take.
     pub fn responder_steps(&self) -> Vec<HandshakeStep> {
-        let mut out = Vec::new();
+        let mut steps = self.base_responder_steps();
+        Self::inject_psk(&mut steps, self.psk_delay);
+        steps
+    }
+
+    fn base_responder_steps(&self) -> Vec<HandshakeStep> {
         let [a, b] = self.pattern;
-
-        // Step 1: Receive the intiator's 'e'
-        out.push(HandshakeStep::RecvEphemeral);
-
-        // if needed, receive 's'
-        match a {
-            'I' => out.push(HandshakeStep::RecvStatic),
-            _ => {}
-        }
-
-        // The responder send 'e'
+        let mut out = vec![HandshakeStep::RecvEphemeral];
+        if a == 'I' { out.push(HandshakeStep::RecvStatic); }
         out.push(HandshakeStep::SendEphemeral);
-
-        // The responder send 's'
-        match b {
-            'K' => {} // The responder's 's' has been already send, does nothing. 
-            _ => out.push(HandshakeStep::SendStatic),
-        }
-
-        // If contain 'psk' modifier, the responder send 'psk' in the second message.
-        if self.psk {
-            out.insert(3, HandshakeStep::SendPskTag);
-        }
-
+        if b != 'K' { out.push(HandshakeStep::SendStatic); }
         out.push(HandshakeStep::Done);
         out
     }
@@ -112,6 +107,8 @@ impl ModeDescriptor {
 pub trait HandshakeSession {
     /// Returns the current role.
     fn role(&self) -> Role;
+
+    fn pipe_state(&self) -> &PipeState;
 
     /// Returns the current mode descriptor.
     fn mode(&self) -> ModeDescriptor;
@@ -123,6 +120,14 @@ pub trait HandshakeSession {
     /// Async method available after rust-version 1.75
     #[allow(async_fn_in_trait)]
     async fn execute(&mut self, step: HandshakeStep) -> anyhow::Result<()>;
+
+    fn active_steps(&self) -> Vec<HandshakeStep> {
+        let mode = self.pipe_state().active_mode();
+        match self.role() {
+            Role::Initiator => mode.initiator_steps(),
+            Role::Responder => mode.responder_steps(),
+        }
+    }
 
     /// Execute a handshake: execute the next step.
     #[allow(async_fn_in_trait)]
