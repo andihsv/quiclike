@@ -26,13 +26,13 @@ pub struct ModeDescriptor {
     /// e.g. IK
     pub pattern: [char; 2],
     /// Whether contain 'psk' modifier or not.
-    pub psk_delay: Option<u8>,
+    pub psk_delay: u8,
 }
 
 impl ModeDescriptor {
 
-    fn inject_psk(steps: &mut Vec<HandshakeStep>, delay: Option<u8>) {
-        if delay == Some(0) {
+    fn inject_psk(steps: &mut Vec<HandshakeStep>, delay: u8) {
+        if delay == 0 {
             // psk0: Send in the first message.
             if let Some(pos) = steps.iter().position(|&s| s == HandshakeStep::SendEphemeral) {
                 steps.insert(pos + 1, HandshakeStep::SendPskTag);
@@ -46,7 +46,7 @@ impl ModeDescriptor {
             match steps[i] {
                 HandshakeStep::SendEphemeral | HandshakeStep::SendStatic => {
                     msg_index += 1;
-                    if Some(msg_index) == delay {
+                    if msg_index == delay {
                         steps.insert(i + 1, HandshakeStep::SendPskTag);
                         return;
                     }
@@ -132,14 +132,12 @@ pub trait HandshakeSession {
     /// Execute a handshake: execute the next step.
     #[allow(async_fn_in_trait)]
     async fn tick(&mut self) -> anyhow::Result<()> {
-        let seq = match self.role() {
-            Role::Initiator => self.mode().initiator_steps(),
-            Role::Responder => self.mode().responder_steps(),
-        };
-        if self.cursor() >= seq.len() {
+        let steps = self.active_steps();
+        let idx = self.cursor();
+        if idx >= steps.len() {
             return Ok(());
         }
-        let step = seq[self.cursor()];
+        let step = steps[idx];
         self.execute(step).await?;
         *self.cursor_mut() += 1;
         Ok(())

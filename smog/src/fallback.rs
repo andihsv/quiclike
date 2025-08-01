@@ -17,8 +17,8 @@ pub enum PipeState {
 
 impl PipeState {
     pub fn new_ik_with_fallback() -> Self {
-        let ik = ModeDescriptor { pattern: ['I', 'K'], psk_delay: Some(2) };
-        let xx_fallback = ModeDescriptor { pattern: ['X', 'X'], psk_delay: Some(0) };
+        let ik = ModeDescriptor { pattern: ['I', 'K'], psk_delay: 2 };
+        let xx_fallback = ModeDescriptor { pattern: ['X', 'X'], psk_delay: 0 };
         PipeState::Ik {
             ik,
             xx_fallback: Some(xx_fallback),
@@ -39,6 +39,7 @@ impl PipeState {
             PipeState::Ik { xx_fallback, .. } => {
                 let xx = xx_fallback.take().ok_or(anyhow::anyhow!("no fallback"))?;
                 *self = PipeState::Xx { xx };
+                tracing::info!("Falling back to XX");
                 Ok(())
             }
             _ => Err(anyhow::anyhow!("already in fallback")),

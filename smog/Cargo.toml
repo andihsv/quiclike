@@ -10,6 +10,7 @@ description = "The noise protocol framework implementation for quiclike protocol
 
 [dependencies]
 anyhow = "1.0.98"
+tracing.workspace = true
 
 [dev-dependencies]
 tokio = { version = "1.47.0", features = ["rt-multi-thread", "macros"] }
