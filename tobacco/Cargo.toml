@@ -5,6 +5,10 @@ edition = "2024"
 authors = ["Andy Hsu", "3261429104atqq.com"]
 readme.workspace = true
 license.workspace = true
+categories = ["quiclike", "network-programming"]
 description = "Quiclike protocol"
 
 [dependencies]
+bytes.workspace = true
+thiserror.workspace = true
+tracing.workspace = true

@@ -5,6 +5,7 @@ edition = "2024"
 authors = ["Andy Hsu", "3261429104atqq.com"]
 license.workspace = true
 readme.workspace = true
+categories = ["noise", "crypto", "quiclike", "tobacco"]
 description = "Ext for smog framework, part of tobacco."
 
 [dependencies]

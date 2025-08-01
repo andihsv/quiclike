@@ -5,6 +5,7 @@ edition = "2024"
 authors = ["Andy Hsu", "3261429104atqq.com"]
 license.workspace = true
 readme.workspace = true
+categories = ["quiclike", "tobacco", "network-programming"]
 description = "Higher level abstraction for tobacco part of quiclike protocol."
 
 [dependencies]
