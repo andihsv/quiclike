@@ -6,7 +6,7 @@ use super::fallback::PipeState;
 pub enum HandshakeStep {
     SendEphemeral,      // Send 'e'
     SendStatic,         // Send 's'
-    SendPskTag,         // Send 'psk' (When 'psk' is enabled)
+    SendPskTag,         // "Send" 'psk' (When 'psk' is enabled), just tell state machine that it is going to perform a dh operation as No.'psk_delah'
     RecvEphemeral,      // Receive 'e'
     RecvStatic,         // Receive 's'
     RecvPskTag,         // Receive 'psk'
@@ -23,7 +23,7 @@ pub enum Role {
 /// Describe which pattern do you use and whether you are using 'psk' pattern modifier or not.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ModeDescriptor {
-    /// e.g. IK
+    /// e.g. ['I', 'K']    ['X', 'X']
     pub pattern: [char; 2],
     /// Whether contain 'psk' modifier or not.
     pub psk_delay: u8,
@@ -111,7 +111,7 @@ pub trait HandshakeSession {
     fn pipe_state(&self) -> &PipeState;
 
     /// Returns the current mode descriptor.
-    fn mode(&self) -> ModeDescriptor;
+    // fn mode(&self) -> ModeDescriptor;
 
     /// Returns the index of the finished steps.
     fn cursor(&self) -> usize;

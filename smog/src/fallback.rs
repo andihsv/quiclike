@@ -18,7 +18,7 @@ pub enum PipeState {
 impl PipeState {
     pub fn new_ik_with_fallback() -> Self {
         let ik = ModeDescriptor { pattern: ['I', 'K'], psk_delay: 2 };
-        let xx_fallback = ModeDescriptor { pattern: ['X', 'X'], psk_delay: 0 };
+        let xx_fallback = ModeDescriptor { pattern: ['X', 'X'], psk_delay: 3 };
         PipeState::Ik {
             ik,
             xx_fallback: Some(xx_fallback),

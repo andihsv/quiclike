@@ -1,15 +1,17 @@
+// An example shows how noise handshake works.
+
 use smog::{fallback::PipeState, hspn_der::*};
 
 struct MockPipe {
     role: Role,
-    mode: ModeDescriptor,
+    // mode: ModeDescriptor,
     cursor: usize,
     state: PipeState,
 }
 
 impl HandshakeSession for MockPipe {
     fn role(&self) -> Role { self.role }
-    fn mode(&self) -> ModeDescriptor { self.mode }
+    // fn mode(&self) -> ModeDescriptor { self.mode }
     fn pipe_state(&self) -> &smog::fallback::PipeState {
         &self.state
     }
@@ -24,10 +26,20 @@ impl HandshakeSession for MockPipe {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let mode = ModeDescriptor { pattern: ['I', 'K'], psk_delay: 0 };
-    let mut cli = MockPipe { role: Role::Initiator, mode, cursor: 0, state: PipeState::new_ik_with_fallback()};
-    let mut srv = MockPipe { role: Role::Responder, mode, cursor: 0, state: PipeState::new_ik_with_fallback()};
+    // IKpsk2:
+    // <- s
+    // ...
+    // -> e, es, s, ss
+    // <- e, ee, se, psk
+    //
+    // XXpsk3:
+    // -> e
+    // <- e, ee, s, es
+    // -> s, se, psk
+    let mut cli = MockPipe { role: Role::Initiator, cursor: 0, state: PipeState::new_ik_with_fallback()};
+    let mut srv = MockPipe { role: Role::Responder, cursor: 0, state: PipeState::new_ik_with_fallback()};
     // Cli and Srv is 'turn based', cursor may not be synced, so expected output:
+    //
     //
     //          Initiator in ModeDescriptor { pattern: ['I', 'K'], psk_delay: 2 } -> SendStatic
     //          Responder in ModeDescriptor { pattern: ['I', 'K'], psk_delay: 2 } -> RecvEphemeral
@@ -39,16 +51,14 @@ async fn main() -> anyhow::Result<()> {
     //          Responder in ModeDescriptor { pattern: ['I', 'K'], psk_delay: 2 } -> Done
     //          Initiator in ModeDescriptor { pattern: ['I', 'K'], psk_delay: 2 } -> Done
     //          === Fallback to XX ===
-    //          Initiator in ModeDescriptor { pattern: ['X', 'X'], psk_delay: 0 } -> SendEphemeral
-    //          Responder in ModeDescriptor { pattern: ['X', 'X'], psk_delay: 0 } -> RecvEphemeral
-    //          Initiator in ModeDescriptor { pattern: ['X', 'X'], psk_delay: 0 } -> SendPskTag
-    //          Responder in ModeDescriptor { pattern: ['X', 'X'], psk_delay: 0 } -> SendEphemeral
-    //          Initiator in ModeDescriptor { pattern: ['X', 'X'], psk_delay: 0 } -> SendStatic
-    //          Responder in ModeDescriptor { pattern: ['X', 'X'], psk_delay: 0 } -> SendPskTag
-    //          Initiator in ModeDescriptor { pattern: ['X', 'X'], psk_delay: 0 } -> RecvEphemeral
-    //          Responder in ModeDescriptor { pattern: ['X', 'X'], psk_delay: 0 } -> SendStatic
-    //          Initiator in ModeDescriptor { pattern: ['X', 'X'], psk_delay: 0 } -> Done
-    //          Responder in ModeDescriptor { pattern: ['X', 'X'], psk_delay: 0 } -> Done
+    //          Initiator in ModeDescriptor { pattern: ['X', 'X'], psk_delay: 3 } -> SendEphemeral
+    //          Responder in ModeDescriptor { pattern: ['X', 'X'], psk_delay: 3 } -> RecvEphemeral
+    //          Initiator in ModeDescriptor { pattern: ['X', 'X'], psk_delay: 3 } -> SendStatic
+    //          Responder in ModeDescriptor { pattern: ['X', 'X'], psk_delay: 3 } -> SendEphemeral
+    //          Initiator in ModeDescriptor { pattern: ['X', 'X'], psk_delay: 3 } -> RecvEphemeral
+    //          Responder in ModeDescriptor { pattern: ['X', 'X'], psk_delay: 3 } -> SendStatic
+    //          Initiator in ModeDescriptor { pattern: ['X', 'X'], psk_delay: 3 } -> Done
+    //          Responder in ModeDescriptor { pattern: ['X', 'X'], psk_delay: 3 } -> Done
     // 
     // 
     // ------------------Explanation--------------------
@@ -94,6 +104,23 @@ async fn main() -> anyhow::Result<()> {
         cli.tick().await?;
         srv.tick().await?;
     }
+
+    // Take a look at the real handshake steps.
+    // The actual output should be (Send and Receive are relative):
+    //
+    //      IKpsk2 steps: [SendStatic, SendEphemeral, SendPskTag, RecvEphemeral, Done]
+    //      XXpsk3 steps: [SendEphemeral, SendStatic, RecvEphemeral, Done]
+    //
+    let ik_mode = ModeDescriptor { pattern: ['I', 'K'], psk_delay: 2 };
+    let ik_initiator_steps = ik_mode.initiator_steps();
+    let ik_responder_steps = ik_mode.responder_steps();
+    println!("IKpsk2 initiator steps: {:?}", ik_initiator_steps);
+    println!("IKpsk2 responder steps: {:?}", ik_responder_steps);
+    let xx_mode = ModeDescriptor { pattern: ['X', 'X'], psk_delay: 3 };
+    let xx_initiator_steps = xx_mode.initiator_steps();
+    let xx_responder_steps = xx_mode.responder_steps();
+    println!("XXpsk3 initiator steps: {:?}", xx_initiator_steps);
+    println!("XXpsk3 responder steps: {:?}", xx_responder_steps);
 
     Ok(())
 }
