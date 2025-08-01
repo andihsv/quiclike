@@ -4,7 +4,7 @@ version = "0.0.0"
 edition = "2024"
 authors = ["Andy Hsu", "3261429104atqq.com"]
 license.workspace = true
-readme.workspace = true
+readme = "readme.md"
 categories = ["p2p", "quiclike", "network-programming", "tobacco"]
 description = "P2P support for quiclike protocol."
 

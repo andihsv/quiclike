@@ -5,6 +5,7 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
+readme = "readme.md"
 description = "Sosistab3 obfuscation support for quiclike protocol."
 
 [dependencies]
