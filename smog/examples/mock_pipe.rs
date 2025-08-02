@@ -108,8 +108,10 @@ async fn main() -> anyhow::Result<()> {
     // Take a look at the real handshake steps.
     // The actual output should be (Send and Receive are relative):
     //
-    //      IKpsk2 steps: [SendStatic, SendEphemeral, SendPskTag, RecvEphemeral, Done]
-    //      XXpsk3 steps: [SendEphemeral, SendStatic, RecvEphemeral, Done]
+    //          IKpsk2 initiator steps: [SendStatic, SendEphemeral, SendPskTag, RecvEphemeral, Done]
+    //          IKpsk2 responder steps: [RecvEphemeral, RecvStatic, SendEphemeral, Done]
+    //          XXpsk3 initiator steps: [SendEphemeral, SendStatic, RecvEphemeral, Done]
+    //          XXpsk3 responder steps: [RecvEphemeral, SendEphemeral, SendStatic, Done]
     //
     let ik_mode = ModeDescriptor { pattern: ['I', 'K'], psk_delay: 2 };
     let ik_initiator_steps = ik_mode.initiator_steps();

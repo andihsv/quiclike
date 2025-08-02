@@ -2,17 +2,17 @@ use crate::crypto::cipher;
 
 /// [DOC]: https://noiseprotocol.org/noise.html#the-cipherstate-object
 pub struct CipherState<C: cipher::Cipher> {
-    cipher: C,
+    pub cipher: C, // Because Smog is a framework, not a implementation, we still don't know what cipher function to use.
     k: [u8; 32],
     n: u64,
 }
 
 impl<C: cipher::Cipher> CipherState<C> {
-    pub fn new(cipher: C, k: [u8; 32], n: u64) -> Self {
-        CipherState::<C> { cipher, k, n }
+    pub fn new(cipher: C) -> Self {
+        CipherState::<C> { cipher, k: [0u8; 32], n: 0 }
     }
 
-    pub fn init(cipher: C, k: [u8; 32]) -> Self {
+    pub fn init(&self, cipher: C, k: [u8; 32]) -> Self {
         CipherState::<C> { cipher, k, n: 0 }
     }
 

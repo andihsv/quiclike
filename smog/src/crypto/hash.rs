@@ -1,10 +1,8 @@
 
 /// [DOC]: https://noiseprotocol.org/noise.html#hash-functions
 pub trait Hash {
-    type Hash; // Usually [u8; 64] or type 'Hash'
-    type HMAC; // usually [u8; 32]
-    type Triple; // (Option<Self::HMAC>, Option<Self::HMAC>, Option<Self::HMAC>)
-    fn hash(input: &[u8]) -> Self::Hash;
-    fn hmac_hash(k: Self::Hash, data: &[u8]) -> Self::HMAC;
-    fn hkdf(ck: Self::HMAC,input: Self::Hash, num: u8) -> Self::Triple;
+    type Triple; // (Option<[u8; 64]>, Option<[u8; 64]>, Option<[u8; 64]>)
+    fn hash(&self, input: &[u8]) -> [u8; 64];
+    fn hmac_hash(&self, k: [u8; 64], data: &[u8]) -> [u8; 64];
+    fn hkdf(&self, ck: [u8; 64],input: &[u8], num: u8) -> (Option<[u8; 64]>, Option<[u8; 64]>, Option<[u8; 64]>);
 }
