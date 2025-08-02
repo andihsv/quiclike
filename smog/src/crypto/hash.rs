@@ -3,7 +3,8 @@
 pub trait Hash {
     type Hash; // Usually [u8; 64] or type 'Hash'
     type HMAC; // usually [u8; 32]
+    type Triple; // (Option<Self::HMAC>, Option<Self::HMAC>, Option<Self::HMAC>)
     fn hash(input: &[u8]) -> Self::Hash;
     fn hmac_hash(k: Self::Hash, data: &[u8]) -> Self::HMAC;
-    fn hkdf(ck: Self::HMAC,input: Self::Hash, num: u8) -> (Option<Self::HMAC>, Option<Self::HMAC>, Option<Self::HMAC>);
+    fn hkdf(ck: Self::HMAC,input: Self::Hash, num: u8) -> Self::Triple;
 }

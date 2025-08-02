@@ -110,7 +110,7 @@ pub trait HandshakeSession {
 
     fn pipe_state(&self) -> &PipeState;
 
-    /// Returns the current mode descriptor.
+    // /// Returns the current mode descriptor.
     // fn mode(&self) -> ModeDescriptor;
 
     /// Returns the index of the finished steps.
