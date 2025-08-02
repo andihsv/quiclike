@@ -1,3 +1,5 @@
+
+/// [DOC]: https://noiseprotocol.org/noise.html#crypto-functions
 pub mod crypto;
 pub mod cipher; 
 pub mod dh;

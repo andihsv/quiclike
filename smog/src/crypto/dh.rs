@@ -1,5 +1,8 @@
-use x25519_dalek::{EphemeralSecret, PublicKey};
-
+/// [DOC]: https://noiseprotocol.org/noise.html#dh-functions
 pub trait DH {
-    fn generate_key_pair() -> (EphemeralSecret, PublicKey);
+    type Secret; // Type for Secret Key.
+    type Public; // Type for Public Key.
+    type Shared; // Type for Shared Key.
+    fn generate_keypair() -> (Self::Secret, Self::Public);
+    fn dh(keypair: Self::Secret, public_key: Self::Public) -> Self::Shared;
 }
