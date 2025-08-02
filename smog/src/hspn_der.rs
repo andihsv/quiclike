@@ -4,13 +4,13 @@ use super::fallback::PipeState;
 /// Action symbols: Client Side / Server Side of view about "What the fuck am i gonna do?"
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum HandshakeStep {
-    SendEphemeral,      // Send 'e'
-    SendStatic,         // Send 's'
-    SendPskTag,         // "Send" 'psk' (When 'psk' is enabled), just tell state machine that it is going to perform a dh operation as No.'psk_delah'
-    RecvEphemeral,      // Receive 'e'
-    RecvStatic,         // Receive 's'
-    RecvPskTag,         // Receive 'psk'
-    Done,               // Handshake is done.
+    SendEphemeral, // Send 'e'
+    SendStatic,    // Send 's'
+    SendPskTag, // "Send" 'psk' (When 'psk' is enabled), just tell state machine that it is going to perform a dh operation as No.'psk_delah'
+    RecvEphemeral, // Receive 'e'
+    RecvStatic, // Receive 's'
+    RecvPskTag, // Receive 'psk'
+    Done,       // Handshake is done.
 }
 
 /// Question: Who are you, and what do you do.
@@ -30,11 +30,13 @@ pub struct ModeDescriptor {
 }
 
 impl ModeDescriptor {
-
     fn inject_psk(steps: &mut Vec<HandshakeStep>, delay: u8) {
         if delay == 0 {
             // psk0: Send in the first message.
-            if let Some(pos) = steps.iter().position(|&s| s == HandshakeStep::SendEphemeral) {
+            if let Some(pos) = steps
+                .iter()
+                .position(|&s| s == HandshakeStep::SendEphemeral)
+            {
                 steps.insert(pos + 1, HandshakeStep::SendPskTag);
             }
             return;
@@ -67,9 +69,13 @@ impl ModeDescriptor {
         let [a, b] = self.pattern;
         let mut out = vec![];
 
-        if a == 'I' { out.push(HandshakeStep::SendStatic); }
+        if a == 'I' {
+            out.push(HandshakeStep::SendStatic);
+        }
         out.push(HandshakeStep::SendEphemeral);
-        if a == 'N' || a == 'X' { out.push(HandshakeStep::SendStatic); }
+        if a == 'N' || a == 'X' {
+            out.push(HandshakeStep::SendStatic);
+        }
 
         out.push(HandshakeStep::RecvEphemeral);
 
@@ -95,9 +101,13 @@ impl ModeDescriptor {
     fn base_responder_steps(&self) -> Vec<HandshakeStep> {
         let [a, b] = self.pattern;
         let mut out = vec![HandshakeStep::RecvEphemeral];
-        if a == 'I' { out.push(HandshakeStep::RecvStatic); }
+        if a == 'I' {
+            out.push(HandshakeStep::RecvStatic);
+        }
         out.push(HandshakeStep::SendEphemeral);
-        if b != 'K' { out.push(HandshakeStep::SendStatic); }
+        if b != 'K' {
+            out.push(HandshakeStep::SendStatic);
+        }
         out.push(HandshakeStep::Done);
         out
     }
