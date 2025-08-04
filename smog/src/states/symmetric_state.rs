@@ -1,4 +1,4 @@
-use std::{io::Read, sync::Arc};
+use std::io::Read;
 
 use once_cell::sync::Lazy;
 

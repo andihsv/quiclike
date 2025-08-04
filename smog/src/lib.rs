@@ -1,5 +1,7 @@
 // Handshake Pattern Derivation
 pub mod crypto;
+pub mod dhpn;
+pub mod dhpn_der;
 pub mod fallback;
 pub mod hspn_der;
 pub mod states;
