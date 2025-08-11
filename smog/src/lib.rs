@@ -1,10 +1,14 @@
-// Handshake Pattern Derivation
-pub mod crypto;
-pub mod dhpn;
-pub mod dhpn_der;
-pub mod fallback;
-pub mod hspn_der;
-pub mod states;
-/// QUIC Version Number: 0xf0f0f2f0
-#[allow(dead_code)]
-const QUIC_VERSION: u32 = 0xf0f0f2f0;
+pub fn add(left: u64, right: u64) -> u64 {
+    left + right
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_works() {
+        let result = add(2, 2);
+        assert_eq!(result, 4);
+    }
+}
