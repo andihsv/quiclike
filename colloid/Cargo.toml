@@ -1,0 +1,11 @@
+[package]
+name = "colloid"
+version = "0.0.0"
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+readme = "readme.md"
+description = "A Noise Implementation focus on one-rtt and zero-rtt handshake."
+
+[dependencies]

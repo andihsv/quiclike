@@ -1,5 +1,5 @@
 [workspace]
-members = ["cigeratte", "miror", "phthisis", "quiclike", "smog", "smog-ext", "tobacco"]
+members = ["cigeratte", "colloid", "miror", "phthisis", "quiclike", "smog", "smog-ext", "tobacco", "colloid"]
 resolver = "3"
 
 [workspace.package]
@@ -22,3 +22,4 @@ miror ={ path = "miror", version = "0.0.0" }
 smog-ext = { path = "smog-ext", version = "0.0.0" }
 cigeratte ={ path = "cigeratte", version = "0.0.0"}
 phthisis = { path = "phthisis", version = "0.0.0" }
+colloid = { path = "colloid", version = "0.0.0" }
