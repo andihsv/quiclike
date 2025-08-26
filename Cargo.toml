@@ -17,7 +17,9 @@ tracing = "0.1.41"
 
 # Local Dependencies.
 smog = { path = "smog", version = "0.0.0" }
-tobacco ={ path = "tobacco", version = "0.0.0" }
-miror ={ path = "miror", version = "0.0.0" }
-cigeratte ={ path = "cigeratte", version = "0.0.0"}
+tobacco = { path = "tobacco", version = "0.0.0" }
+miror = { path = "miror", version = "0.0.0" }
+cigeratte = { path = "cigeratte", version = "0.0.0"}
 phthisis = { path = "phthisis", version = "0.0.0" }
+colloid = { path = "colloid", version = "0.0.0" }
+

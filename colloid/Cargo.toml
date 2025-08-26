@@ -8,3 +8,5 @@ repository.workspace = true
 description = "Crypto layer abstraction for smog."
 
 [dependencies]
+blake3 = { version = "1.8.2", features = ["rayon", "mmap"] }
+x25519-dalek = { version = "2.0.1", features = ["reusable_secrets", "static_secrets", "getrandom"] }
