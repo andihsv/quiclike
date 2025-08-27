@@ -25,7 +25,7 @@ pub mod static_key {
         let public_key = PublicKey::from(&static_key);
         (static_key, public_key)
     }
-
+    // The static_key is local, and the public_key is from remote.
     pub fn dh(static_key: StaticSecret, public_key: PublicKey) -> SharedSecret {
         static_key.diffie_hellman(&public_key)
     }
@@ -40,6 +40,7 @@ pub mod reusable_key {
         (reusable_key, public_key)
     }
 
+    // The reusable_key is local, and the public_key is from remote.
     pub fn dh(reusable_key: ReusableSecret, public_key: PublicKey) -> SharedSecret {
         reusable_key.diffie_hellman(&public_key)
     }
