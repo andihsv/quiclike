@@ -1,4 +1,4 @@
-/// This hash mod is based on The Noise Protocol specs: https://noiseprotocol.org/noise.html#hash-functions.
+//! This hash mod is based on The Noise Protocol specs: https://noiseprotocol.org/noise.html#hash-functions.
 
 /// Hash output length for blake3.
 pub const HASHLEN: usize = blake3::OUT_LEN;
@@ -7,6 +7,7 @@ pub const BLOCKLEN: usize = blake3::BLOCK_LEN;
 /// Hash the data at once.
 pub mod once {
     pub mod rayon {
+
         use crate::byte;
         use crate::dh::DHLEN;
         use crate::hash::HASHLEN;
@@ -19,9 +20,9 @@ pub mod once {
             chaining_key: &[u8; HASHLEN],
             input_key_material: &[u8; DHLEN],
             num_out: u8,
-            out1: &mut [u8],
-            out2: &mut [u8],
-            out3: Option<&mut [u8]>,
+            out1: &mut [u8; HASHLEN],
+            out2: &mut [u8; HASHLEN],
+            out3: &mut [u8; HASHLEN],
         ) {
             let mac_temp_key = hmac(chaining_key, input_key_material);
             let temp_key = mac_temp_key.as_bytes();
@@ -37,7 +38,7 @@ pub mod once {
             if num_out == 2 {
                 return;
             }
-            if let Some(out3) = out3 {
+            if num_out == 3 {
                 let mut buf2 = [0u8; 33];
                 buf2[..32].copy_from_slice(output2);
                 buf2[32..].copy_from_slice(&byte(3));

@@ -1,4 +1,4 @@
-/// The DH mod is based on The Noise Protocol spec: https://noiseprotocol.org/noise.html#dh-functions
+//! The DH mod is based on The Noise Protocol spec: https://noiseprotocol.org/noise.html#dh-functions
 
 /// The default DH length for x25519 ecdh
 pub const DHLEN: usize = 32;
