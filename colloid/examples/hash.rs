@@ -23,7 +23,7 @@ fn main() {
     once::rayon::hkdf(key, input_key_material, 2, buf1, buf2, buf3);
     println!("HKDF result 1: {:?}", buf1);
     println!("HKDF result 2: {:?}", buf2);
-    println!("HKDF result 3: {:?}", buf3);
+    println!("HKDF result 3: {:?}", buf3); // Should be empty.
     once::rayon::hkdf(key, input_key_material, 3, buf1, buf2, buf3);
     println!("HKDF result 1: {:?}", buf1);
     println!("HKDF result 2: {:?}", buf2);
