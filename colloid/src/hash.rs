@@ -29,7 +29,7 @@ pub mod once {
             let mac_output1 = hmac(temp_key, &byte(1));
             let output1 = mac_output1.as_bytes();
             out1.copy_from_slice(output1);
-            let mut buf1 = [0u8; 33];
+            let mut buf1 = [0u8; HASHLEN + 1];
             buf1[..32].copy_from_slice(output1);
             buf1[32..].copy_from_slice(&byte(2));
             let mac_output2 = hmac(temp_key, &buf1);
@@ -39,7 +39,7 @@ pub mod once {
                 return;
             }
             if num_out == 3 {
-                let mut buf2 = [0u8; 33];
+                let mut buf2 = [0u8; HASHLEN + 1];
                 buf2[..32].copy_from_slice(output2);
                 buf2[32..].copy_from_slice(&byte(3));
                 let mac_output3 = hmac(temp_key, &buf2);
@@ -73,16 +73,16 @@ pub mod once {
             chaining_key: &[u8; HASHLEN],
             input_key_material: &[u8; DHLEN],
             num_out: u8,
-            out1: &mut [u8],
-            out2: &mut [u8],
-            out3: Option<&mut [u8]>,
+            out1: &mut [u8; HASHLEN],
+            out2: &mut [u8; HASHLEN],
+            out3: &mut [u8; HASHLEN],
         ) {
             let mac_temp_key = hmac(chaining_key, input_key_material);
             let temp_key = mac_temp_key.as_bytes();
             let mac_output1 = hmac(temp_key, &byte(1));
             let output1 = mac_output1.as_bytes();
             out1.copy_from_slice(output1);
-            let mut buf1 = [0u8; 33];
+            let mut buf1 = [0u8; HASHLEN + 1];
             buf1[..32].copy_from_slice(output1);
             buf1[32..].copy_from_slice(&byte(2));
             let mac_output2 = hmac(temp_key, &buf1);
@@ -91,8 +91,8 @@ pub mod once {
             if num_out == 2 {
                 return;
             }
-            if let Some(out3) = out3 {
-                let mut buf2 = [0u8; 33];
+            if num_out == 3 {
+                let mut buf2 = [0u8; HASHLEN + 1];
                 buf2[..32].copy_from_slice(output2);
                 buf2[32..].copy_from_slice(&byte(3));
                 let mac_output3 = hmac(temp_key, &buf2);
@@ -124,16 +124,16 @@ pub mod once {
             chaining_key: &[u8; HASHLEN],
             input_key_material: &[u8; DHLEN],
             num_out: u8,
-            out1: &mut [u8],
-            out2: &mut [u8],
-            out3: Option<&mut [u8]>,
+            out1: &mut [u8; HASHLEN],
+            out2: &mut [u8; HASHLEN],
+            out3: &mut [u8; HASHLEN],
         ) {
             let mac_temp_key = hmac(chaining_key, input_key_material);
             let temp_key = mac_temp_key.as_bytes();
             let mac_output1 = hmac(temp_key, &byte(1));
             let output1 = mac_output1.as_bytes();
             out1.copy_from_slice(output1);
-            let mut buf1 = [0u8; 33];
+            let mut buf1 = [0u8; HASHLEN + 1];
             buf1[..32].copy_from_slice(output1);
             buf1[32..].copy_from_slice(&byte(2));
             let mac_output2 = hmac(temp_key, &buf1);
@@ -142,8 +142,8 @@ pub mod once {
             if num_out == 2 {
                 return;
             }
-            if let Some(out3) = out3 {
-                let mut buf2 = [0u8; 33];
+            if num_out == 3 {
+                let mut buf2 = [0u8; HASHLEN + 1];
                 buf2[..32].copy_from_slice(output2);
                 buf2[32..].copy_from_slice(&byte(3));
                 let mac_output3 = hmac(temp_key, &buf2);
@@ -178,16 +178,16 @@ pub mod stream {
         input_key_material: &[u8; DHLEN],
         // reader: impl Read,
         num_out: u8,
-        out1: &mut [u8],
-        out2: &mut [u8],
-        out3: Option<&mut [u8]>,
+        out1: &mut [u8; HASHLEN],
+        out2: &mut [u8; HASHLEN],
+        out3: &mut [u8; HASHLEN],
     ) {
         let mac_temp_key = hmac(chaining_key, input_key_material);
         let temp_key = mac_temp_key.as_bytes();
         let mac_output1 = hmac(temp_key, &byte(1));
         let output1 = mac_output1.as_bytes();
         out1.copy_from_slice(output1);
-        let mut buf1 = [0u8; 33];
+        let mut buf1 = [0u8; HASHLEN + 1];
         buf1[..32].copy_from_slice(output1);
         buf1[32..].copy_from_slice(&byte(2));
         let mac_output2 = hmac(temp_key, &buf1);
@@ -196,8 +196,8 @@ pub mod stream {
         if num_out == 2 {
             return;
         }
-        if let Some(out3) = out3 {
-            let mut buf2 = [0u8; 33];
+        if num_out == 3 {
+            let mut buf2 = [0u8; HASHLEN + 1];
             buf2[..32].copy_from_slice(output2);
             buf2[32..].copy_from_slice(&byte(3));
             let mac_output3 = hmac(temp_key, &buf2);
