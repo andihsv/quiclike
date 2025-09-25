@@ -47,7 +47,7 @@ impl TryFrom<u8> for LongPacketType {
             0x01 => Ok(Self::ZeroRtt),
             0x02 => Ok(Self::Handshake),
             0x03 => Ok(Self::Retry),
-            _    => Err(HeaderError::InvalidPacketType),
+            _ => Err(HeaderError::InvalidPacketType),
         }
     }
 }
@@ -67,28 +67,44 @@ impl TryFrom<&[u8]> for LongHeader {
 
     fn try_from(buf: &[u8]) -> Result<Self, Self::Error> {
         let mut r = Bytes::copy_from_slice(buf);
-        if r.remaining() < 1 { return Err(HeaderError::BufferTooShort); }
+        if r.remaining() < 1 {
+            return Err(HeaderError::BufferTooShort);
+        }
 
         let first = r.get_u8();
         // The highest bit must be 1.
-        if first >> 7 != 1 { return Err(HeaderError::InvalidPacketType); }
+        if first >> 7 != 1 {
+            return Err(HeaderError::InvalidPacketType);
+        }
         let packet_type = LongPacketType::try_from(first)?;
 
-        if r.remaining() < 4 { return Err(HeaderError::BufferTooShort); }
+        if r.remaining() < 4 {
+            return Err(HeaderError::BufferTooShort);
+        }
         let version = Version(r.get_u32());
 
         // DCID
         let dc_len = r.get_u8() as usize;
-        if r.remaining() < dc_len { return Err(HeaderError::BufferTooShort); }
-        let dst_cid = ConnectionId { cid: r.copy_to_bytes(dc_len) };
+        if r.remaining() < dc_len {
+            return Err(HeaderError::BufferTooShort);
+        }
+        let dst_cid = ConnectionId {
+            cid: r.copy_to_bytes(dc_len),
+        };
 
         // SCID
         let sc_len = r.get_u8() as usize;
-        if r.remaining() < sc_len { return Err(HeaderError::BufferTooShort); }
-        let src_cid = ConnectionId { cid: r.copy_to_bytes(sc_len) };
+        if r.remaining() < sc_len {
+            return Err(HeaderError::BufferTooShort);
+        }
+        let src_cid = ConnectionId {
+            cid: r.copy_to_bytes(sc_len),
+        };
 
         // Packet Number（IETF QUIC Long header must be 32 bits.)
-        if r.remaining() < 4 { return Err(HeaderError::BufferTooShort); }
+        if r.remaining() < 4 {
+            return Err(HeaderError::BufferTooShort);
+        }
         let packet_number = r.get_u32();
 
         // Rest of bits are payload.
@@ -113,7 +129,7 @@ impl LongHeader {
             LongPacketType::ZeroRtt => 0x01,
             LongPacketType::Handshake => 0x02,
             LongPacketType::Retry => 0x03,
-            LongPacketType::VersionNegotiation => 0x00, 
+            LongPacketType::VersionNegotiation => 0x00,
         };
         buf.put_u8(0x80 | type_byte);
         buf.put_u32(self.version.0);
@@ -139,17 +155,25 @@ impl TryFrom<&[u8]> for ShortHeader {
 
     fn try_from(buf: &[u8]) -> Result<Self, Self::Error> {
         let mut r = Bytes::copy_from_slice(buf);
-        if r.remaining() < 1 { return Err(HeaderError::BufferTooShort); }
+        if r.remaining() < 1 {
+            return Err(HeaderError::BufferTooShort);
+        }
 
         let first = r.get_u8();
-        if first >> 7 != 0 { return Err(HeaderError::InvalidPacketType); }
+        if first >> 7 != 0 {
+            return Err(HeaderError::InvalidPacketType);
+        }
 
         let key_phase = (first & 0x40) != 0;
         let pn_len = ((first >> 4) & 0x03) as usize + 1; // 1,2,4 字节
         let cid_len = r.get_u8() as usize; // QUIC 标准中短 header 没有 cid_len 字节，这里简化
-        let dst_cid = ConnectionId { cid: r.copy_to_bytes(cid_len) };
+        let dst_cid = ConnectionId {
+            cid: r.copy_to_bytes(cid_len),
+        };
 
-        if r.remaining() < pn_len { return Err(HeaderError::BufferTooShort); }
+        if r.remaining() < pn_len {
+            return Err(HeaderError::BufferTooShort);
+        }
         let pn = match pn_len {
             1 => r.get_u8() as u64,
             2 => r.get_u16() as u64,
@@ -158,14 +182,21 @@ impl TryFrom<&[u8]> for ShortHeader {
         };
 
         let payload = r.copy_to_bytes(r.remaining());
-        Ok(Self { key_phase, dst_cid, packet_number: pn, payload })
+        Ok(Self {
+            key_phase,
+            dst_cid,
+            packet_number: pn,
+            payload,
+        })
     }
 }
 
 impl ShortHeader {
     pub fn write<B: BufMut>(&self, buf: &mut B) {
         let mut first = 0x00u8; // Header Form = 0
-        if self.key_phase { first |= 0x40; }
+        if self.key_phase {
+            first |= 0x40;
+        }
 
         let pn = self.packet_number;
         let (pn_len, pn_bytes): (usize, &[u8]) = if pn < (1 << 8) {
@@ -196,8 +227,12 @@ mod tests {
         let hdr = LongHeader {
             packet_type: LongPacketType::Initial,
             version: Version(0x00000001),
-            dst_cid: ConnectionId { cid: Bytes::from_static(&[1,2,3,4]) },
-            src_cid: ConnectionId { cid: Bytes::from_static(&[5,6]) },
+            dst_cid: ConnectionId {
+                cid: Bytes::from_static(&[1, 2, 3, 4]),
+            },
+            src_cid: ConnectionId {
+                cid: Bytes::from_static(&[5, 6]),
+            },
             packet_number: 0x12345678,
             payload: Bytes::from_static(b"hello"),
         };
@@ -211,7 +246,9 @@ mod tests {
     fn round_trip_short() {
         let hdr = ShortHeader {
             key_phase: true,
-            dst_cid: ConnectionId { cid: Bytes::from_static(&[9,8,7]) },
+            dst_cid: ConnectionId {
+                cid: Bytes::from_static(&[9, 8, 7]),
+            },
             packet_number: 42,
             payload: Bytes::from_static(b"world"),
         };

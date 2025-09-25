@@ -9,7 +9,6 @@ pub mod once {
     pub mod rayon {
 
         use crate::byte;
-        use crate::dh::DHLEN;
         use crate::hash::HASHLEN;
 
         pub fn hash(data: &[u8]) -> blake3::Hash {
@@ -18,7 +17,7 @@ pub mod once {
 
         pub fn hkdf(
             chaining_key: &[u8; HASHLEN],
-            input_key_material: &[u8; DHLEN],
+            input_key_material: &[u8],
             num_out: u8,
             out1: &mut [u8; HASHLEN],
             out2: &mut [u8; HASHLEN],

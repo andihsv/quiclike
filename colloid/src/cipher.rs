@@ -12,12 +12,12 @@ pub mod non_detached {
             key: &[u8; 32],
             nonce: &[u8; 12],
             ad: &[u8],
-            buf: &mut bytes::BytesMut,
+            mut buf: bytes::BytesMut,
         ) -> std::result::Result<(), chacha20poly1305::Error> {
             let key = Key::from_slice(key);
             let nonce = Nonce::from_slice(nonce);
             let cipher = ChaCha20Poly1305::new(key);
-            cipher.encrypt_in_place(nonce, ad, buf)?;
+            cipher.encrypt_in_place(nonce, ad, &mut buf)?;
             Ok(())
         }
 
@@ -25,14 +25,16 @@ pub mod non_detached {
             key: &[u8; 32],
             nonce: &[u8; 12],
             ad: &[u8],
-            buf: &mut bytes::BytesMut,
+            mut buf: bytes::BytesMut,
         ) -> std::result::Result<(), chacha20poly1305::Error> {
             let key = Key::from_slice(key);
             let nonce = Nonce::from_slice(nonce);
             let cipher = ChaCha20Poly1305::new(key);
-            cipher.decrypt_in_place(nonce, ad, buf)?;
+            cipher.decrypt_in_place(nonce, ad, &mut buf)?;
             Ok(())
         }
+
+        // The rekey() function cannot be implemented in in-place mode because plaintext must be `zeros`.
     }
 
     pub mod non_in_place {
@@ -63,6 +65,12 @@ pub mod non_detached {
             let plaintext = cipher.decrypt(nonce, ciphertext)?;
             Ok(plaintext)
         }
+
+        pub fn rekey(k: &[u8; 32]) -> Result<[u8; 32], chacha20poly1305::Error> {
+            let vec = encrypt(k, &[u8::MAX; 12], &[0u8; 32])?;
+            let result = <[u8; 32]>::try_from(vec).expect("Failed to parse Vec");
+            Ok(result)
+        }
     }
 }
 
@@ -79,12 +87,12 @@ pub mod detached {
         key: &[u8; 32],
         nonce: &[u8; 12],
         ad: &[u8],
-        buf: &mut bytes::BytesMut,
+        mut buf: bytes::BytesMut,
     ) -> std::result::Result<Tag, chacha20poly1305::Error> {
         let key = Key::from_slice(key);
         let nonce = Nonce::from_slice(nonce);
         let cipher = ChaCha20Poly1305::new(key);
-        let tag = cipher.encrypt_in_place_detached(nonce, ad, buf)?;
+        let tag = cipher.encrypt_in_place_detached(nonce, ad, &mut buf)?;
         Ok(tag)
     }
 
@@ -92,13 +100,13 @@ pub mod detached {
         key: &[u8; 32],
         nonce: &[u8; 12],
         ad: &[u8],
-        buf: &mut bytes::BytesMut,
+        mut buf: bytes::BytesMut,
         tag: &Tag,
     ) -> std::result::Result<(), chacha20poly1305::Error> {
         let key = Key::from_slice(key);
         let nonce = Nonce::from_slice(nonce);
         let cipher = ChaCha20Poly1305::new(key);
-        cipher.decrypt_in_place_detached(nonce, ad, buf, tag)?;
+        cipher.decrypt_in_place_detached(nonce, ad, &mut buf, tag)?;
         Ok(())
     }
 }
