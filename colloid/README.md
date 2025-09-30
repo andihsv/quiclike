@@ -3,5 +3,5 @@
 Colloid default uses:
 
                 Hash algo: Blake3 (Also for hmac and hkdf.)
-                Cipher algo: Chachapoly20Poly1305
+                Cipher algo: Chacha12blake3
                 DH algo: ECDHE
