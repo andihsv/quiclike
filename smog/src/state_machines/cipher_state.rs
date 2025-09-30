@@ -1,25 +1,36 @@
 //! Cipehr State Machine based on The Noise Protocol spec: <https://noiseprotocol.org/noise.html#the-cipherstate-object>
 
-use bytes::BytesMut;
-use colloid::cipher::non_detached::{in_place, non_in_place};
+use chacha12_blake3::ChaCha12Blake3;
+use colloid::cipher::Cipher;
 
-#[derive(Default, Debug)]
 pub struct CipherState {
     k: [u8; 32],
-    n: [u8; 12],
+    n: [u8; 32],
+    pub cipher_obj: Cipher,
 }
 
 impl CipherState {
+
+    pub fn init(k: [u8; 32]) -> Self {
+        Self {
+            k,
+            n: [0u8; 32], 
+            cipher_obj: Cipher {
+                inner: ChaCha12Blake3::new(k)
+            }
+        }
+    }
+
     pub fn init_key(&mut self, key: [u8; 32]) {
         self.k = key;
-        self.n = [0u8; 12];
+        self.n = [0u8; 32];
     }
 
     pub fn has_key(&self) -> bool {
         !self.k.is_empty()
     }
 
-    pub fn set_nonce(&mut self, nonce: [u8; 12]) {
+    pub fn set_nonce(&mut self, nonce: [u8; 32]) {
         self.n = nonce;
     }
 
@@ -50,11 +61,11 @@ impl CipherState {
     pub fn encrypt_with_ad(
         &mut self,
         ad: &[u8],
-        buf: BytesMut,
-    ) -> std::result::Result<(), chacha20poly1305::Error> {
+        buf: &[u8],
+    ) -> std::result::Result<(), chacha12_blake3::Error> {
         if self.has_key() {
             self.increment_nonce_le();
-            in_place::encrypt(&self.k, &self.n, ad, buf)?;
+            self.cipher_obj.encrypt(self.n, ad, buf);
         }
         Ok(())
     }
@@ -62,24 +73,25 @@ impl CipherState {
     pub fn decrypt_with_ad(
         &mut self,
         ad: &[u8],
-        buf: BytesMut,
-    ) -> std::result::Result<(), chacha20poly1305::Error> {
+        buf: &[u8],
+    ) -> std::result::Result<Vec<u8>, chacha12_blake3::Error> {
         if self.has_key() {
             self.increment_nonce_le();
-            let result = in_place::decrypt(&self.k, &self.n, ad, buf);
-            match result {
-                Ok(()) => return Ok(()),
-                Err(_e) => {
-                    self.decrement_nonce_le();
-                    return Err(chacha20poly1305::Error);
-                }
-            }
+            return self.cipher_obj.decrypt(self.n, ad, buf);
+            // match result {
+            //     Ok(v) => return Ok(v),
+            //     Err(_e) => {
+            //         self.decrement_nonce_le();
+            //         return Err(chacha12_blake3::Error {});
+            //     }
+            // }
+        } else {
+            return Err(chacha12_blake3::Error {  });
         }
-        Ok(())
     }
 
-    pub fn rekey(&mut self) -> Result<(), chacha20poly1305::Error> {
-        self.k = non_in_place::rekey(&self.k)?;
+    pub fn rekey(&mut self) -> Result<(), chacha12_blake3::Error> {
+        self.cipher_obj.rekey(self.k);
         Ok(())
     }
 }

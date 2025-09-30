@@ -11,7 +11,6 @@ use colloid::{dh, hash};
 
 use crate::state_machines::cipher_state::CipherState;
 
-#[derive(Debug, Default)]
 pub struct SymmetricState {
     cipher_state: CipherState,
     ck: [u8; hash::HASHLEN],
