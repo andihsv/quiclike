@@ -6,7 +6,7 @@
 //! > uses to encrypt and decrypt ciphertexts. During the handshake phase each party has a single CipherState, but during
 //! > the transport phase each party has two CipherState objects: one for sending, and one for receiving.
 
-use bytes::BytesMut;
+// use bytes::BytesMut;
 use colloid::{dh, hash};
 
 use crate::state_machines::cipher_state::CipherState;
@@ -29,7 +29,8 @@ impl SymmetricState {
         }
 
         self.ck = self.h;
-        self.cipher_state = CipherState::default();
+        let k: [u8; 32] = rand::random();
+        self.cipher_state = CipherState::init(k);
         self.cipher_state.init_key([0u8; hash::HASHLEN]);
     }
 
@@ -72,14 +73,20 @@ impl SymmetricState {
 
     // If k is empty, function decrypt_with_ad will set self.h to plaintext
     // buf means plaintext, got ciphertext in return.
-    pub fn encrypt_and_hash(&mut self, buf: BytesMut) -> Result<BytesMut, chacha20poly1305::Error> {
-        self.cipher_state.decrypt_with_ad(&self.h, buf.clone())?;
+    pub fn encrypt_and_hash(
+        &mut self,
+        buf: &'static [u8],
+    ) -> Result<&'static [u8], chacha12_blake3::Error> {
+        self.cipher_state.decrypt_with_ad(&self.h, buf)?;
         Ok(buf)
     }
 
     // buf means ciphertext, got plaintext in return.
-    pub fn decrypt_and_hash(&mut self, buf: BytesMut) -> Result<BytesMut, chacha20poly1305::Error> {
-        self.cipher_state.encrypt_with_ad(&self.h, buf.clone())?;
+    pub fn decrypt_and_hash(
+        &mut self,
+        buf: &'static [u8],
+    ) -> Result<&'static [u8], chacha12_blake3::Error> {
+        self.cipher_state.encrypt_with_ad(&self.h, buf)?;
         Ok(buf)
     }
 
@@ -88,8 +95,10 @@ impl SymmetricState {
         let temp_k2 = &mut [0u8; 32];
         let buf3 = &mut [0u8; 32];
         hash::once::rayon::hkdf(&self.ck, &[0u8; 0], 2, temp_k1, temp_k2, buf3);
-        let mut c1 = CipherState::default();
-        let mut c2 = CipherState::default();
+        let k1: [u8; 32] = rand::random();
+        let k2: [u8; 32] = rand::random();
+        let mut c1 = CipherState::init(k1);
+        let mut c2 = CipherState::init(k2);
         c1.init_key(*temp_k1);
         c2.init_key(*temp_k2);
         (c1, c2)

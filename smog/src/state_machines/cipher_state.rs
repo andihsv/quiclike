@@ -10,14 +10,13 @@ pub struct CipherState {
 }
 
 impl CipherState {
-
     pub fn init(k: [u8; 32]) -> Self {
         Self {
             k,
-            n: [0u8; 32], 
+            n: [0u8; 32],
             cipher_obj: Cipher {
-                inner: ChaCha12Blake3::new(k)
-            }
+                inner: ChaCha12Blake3::new(k),
+            },
         }
     }
 
@@ -34,7 +33,7 @@ impl CipherState {
         self.n = nonce;
     }
 
-    pub(crate) fn increment_nonce_le(&mut self) {
+    pub(crate) fn increase_nonce_le(&mut self) {
         let mut carry = 1u8;
         for b in self.n.iter_mut() {
             let (val, new_carry) = b.overflowing_add(carry);
@@ -46,17 +45,17 @@ impl CipherState {
         }
     }
 
-    pub(crate) fn decrement_nonce_le(&mut self) {
-        let mut borrow = 1u8;
-        for b in self.n.iter_mut() {
-            let (val, under) = b.overflowing_sub(borrow);
-            *b = val;
-            borrow = under as u8; // 1 if we underflowed, 0 otherwise
-            if borrow == 0 {
-                break; // no further borrowing needed
-            }
-        }
-    }
+    // pub(crate) fn decrease_nonce_le(&mut self) {
+    //     let mut borrow = 1u8;
+    //     for b in self.n.iter_mut() {
+    //         let (val, under) = b.overflowing_sub(borrow);
+    //         *b = val;
+    //         borrow = under as u8; // 1 if we underflowed, 0 otherwise
+    //         if borrow == 0 {
+    //             break; // no further borrowing needed
+    //         }
+    //     }
+    // }
 
     pub fn encrypt_with_ad(
         &mut self,
@@ -64,7 +63,7 @@ impl CipherState {
         buf: &[u8],
     ) -> std::result::Result<(), chacha12_blake3::Error> {
         if self.has_key() {
-            self.increment_nonce_le();
+            self.increase_nonce_le();
             self.cipher_obj.encrypt(self.n, ad, buf);
         }
         Ok(())
@@ -76,7 +75,7 @@ impl CipherState {
         buf: &[u8],
     ) -> std::result::Result<Vec<u8>, chacha12_blake3::Error> {
         if self.has_key() {
-            self.increment_nonce_le();
+            self.increase_nonce_le();
             return self.cipher_obj.decrypt(self.n, ad, buf);
             // match result {
             //     Ok(v) => return Ok(v),
@@ -86,7 +85,7 @@ impl CipherState {
             //     }
             // }
         } else {
-            return Err(chacha12_blake3::Error {  });
+            return Err(chacha12_blake3::Error {});
         }
     }
 
