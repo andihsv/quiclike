@@ -2,7 +2,7 @@
 
 ### This is a protocol based on QUIC, but have something different.
 
-**Directory structure: **
+Directory structure: 
 
 `miror`: **P2P support for quiclike protoco.**
 
@@ -14,11 +14,9 @@
 
 `smog`: **The noise protocol framework implementation for quiclike protocol, part of tobacco.**
 
-`smog-ext`: **Ext for smog framework, part of tobacco.**
-
 `tobacco`: **QUICLIKE protocol.**
 
-~~~
+---
+
 QUICLIKE IS STILL UNDER HEAVY DEVELOPMENT.
 SOME FUNCTIONALITIES HAVE NOT IMPLEMENT YET.
-~~~
